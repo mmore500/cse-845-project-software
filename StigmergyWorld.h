@@ -27,6 +27,7 @@ private:
 public:
 	//User Parameters
 	static shared_ptr<ParameterLink<int>> evaluationsPerGenerationPL;
+	static shared_ptr<ParameterLink<int>> lifeTimePL;
 	//MABE Parameters
 	static shared_ptr<ParameterLink<string>> groupNamePL;
 	static shared_ptr<ParameterLink<string>> brainNamePL;
@@ -37,6 +38,7 @@ public:
 	virtual void evaluateSolo(shared_ptr<Organism> org, int analyze, int visualize, int debug);
 
 	virtual void evaluate(map<string, shared_ptr<Group>>& groups, int analyze, int visualize, int debug) {
+		StigmergyWorld::generateMap();
 		int popSize = groups[groupNamePL->get(PT)]->population.size();
 		for (int i = 0; i < popSize; i++) {
 			evaluateSolo(groups[groupNamePL->get(PT)]->population[i], analyze, visualize, debug);
