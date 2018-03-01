@@ -21,15 +21,21 @@ StigmergyWorld::StigmergyWorld(shared_ptr<ParametersTable> _PT):AbstractWorld(_P
 	popFileColumns.push_back("score");
 }
 
+void StigmergyWorld::generateMap(){
+	return;
+}
+
 void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int visualize, int debug) {
 	auto brain = org->brains[brainNamePL->get(PT)];
 	for (int eval = 0; eval < evaluationsPerGenerationPL->get(PT); eval++) {
-		brain->resetBrain();
-		brain->setInput(0, 1);
-		brain->update();
-		int i = 1;
-		int dummy = Bit(brain->readOutput(i));
-		double score = 1.0;
-		org->dataMap.append("score", score);
+		for (int time = 0; time < lifeTime; time++){
+			brain->resetBrain();
+			brain->setInput(0, 1);
+			brain->update();
+			int i = 1;
+			int dummy = Bit(brain->readOutput(i));
+			double score = 1.0;
+			org->dataMap.append("score", score);
+		}
 	}	
 }

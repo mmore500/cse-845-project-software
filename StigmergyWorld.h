@@ -22,6 +22,8 @@ class StigmergyWorld : public AbstractWorld {
 private:
 	int inputSize = 1;
 	int outputSize = 1;
+	void generateMap();
+	int lifeTime = 1;
 public:
 	//User Parameters
 	static shared_ptr<ParameterLink<int>> evaluationsPerGenerationPL;
