@@ -59,7 +59,7 @@ private:
 	struct cell{
 		int x,y;
 
-		bool isInBounds(int xDim, int yDim, int dir){
+		bool nextIsInBounds(int xDim, int yDim, int dir){
 			return (x + 2*o.x(dir) >0) && (x + 2*o.x(dir) < xDim) && (y + 2*o.y(dir) > 0) && (y + 2*o.y(dir) < yDim);
 		}
 

@@ -49,11 +49,9 @@ void StigmergyWorld::generateMap(){
 
 	while(not stack.empty()){
 		vector<cell> possibleNext;
-		for(int i=0;i<4;i++){
-			if(current.isInBounds(xDim, yDim, i)){
-				if(current.nextIsUnvisited(i, world)){
-					possibleNext.push_back(current.next(i));
-				}
+		for(int dir = 0; dir < 4; dir++){
+			if(current.nextIsInBounds(xDim, yDim, dir) and current.nextIsUnvisited(dir, world)){
+					possibleNext.push_back(current.next(dir));
 			}
 		}
 		if(not possibleNext.empty()){
