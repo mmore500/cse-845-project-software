@@ -35,52 +35,41 @@ StigmergyWorld::StigmergyWorld(shared_ptr<ParametersTable> _PT):AbstractWorld(_P
 	popFileColumns.push_back("score");
 }
 
-//used in map generation
-struct cell{
-	int x,y;
-	cell(int _x,int _y){x=_x; y=_y;};
-};
-
 //Generates a map to evaluate organisms in
 void StigmergyWorld::generateMap(){
 	//The following algorithm performs a random DFS from the top left corner of the maze
 	//to construct the hallways. Note: outer most band is a buffer and should be left solid.
-	int xm[4]={0,1,0,-1};
-	int ym[4]={-1,0,1,0};
+
 	vector<cell> stack;
-	world.resize(xDim);
-	for(int i=0;i<xDim;i++){
-		world[i].resize(yDim);
-		for(int j=0;j<yDim;j++){
-			world[i][j]=1;
-		}
-	}
-	cell currentCell=cell(1,1);
-	world[1][1]=0;
-	stack.push_back(currentCell);
-	while(stack.size()>0){
-		vector<cell> possibleNextBranch;
+	auto allOnes = vector<vector<int>>(xDim, vector<int>(yDim, 1));
+	world = allOnes;
+	auto current = cell(1,1);
+	world[1][1] = 0;
+	stack.push_back(current);
+
+	while(not stack.empty()){
+		vector<cell> possibleNext;
 		for(int i=0;i<4;i++){
-			if((currentCell.x+(2*xm[i])>0) && (currentCell.x+(2*xm[i])<xDim) && (currentCell.y+(2*ym[i])>0) && (currentCell.y+(2*ym[i])<yDim)){
-				if(world[currentCell.x+(2*xm[i])][currentCell.y+(2*ym[i])] == 1){
-					possibleNextBranch.push_back(cell(currentCell.x+(2*xm[i]),currentCell.y+(2*ym[i])));
+			if(current.isInBounds(xDim, yDim, i)){
+				if(current.nextIsUnvisited(i, world)){
+					possibleNext.push_back(current.next(i));
 				}
 			}
 		}
-		if(possibleNextBranch.size()>0){
-			cell targetCell=possibleNextBranch[Random::getIndex(possibleNextBranch.size())];
-			stack.push_back(currentCell);
-			world[targetCell.x][targetCell.y]=0;
-			world[(currentCell.x+targetCell.x)/2][(currentCell.y+targetCell.y)/2]=0;
-			currentCell=targetCell;
+		if(not possibleNext.empty()){
+			auto target = possibleNext[Random::getIndex(possibleNext.size())];
+			stack.push_back(current);
+			world[target.x][target.y] = 0;
+			world[(current.x + target.x) / 2][(current.y + target.y) / 2] = 0;
+			current = target;
 		} else {
-			if(stack.size()>0){
-				currentCell=stack.back();
+			if(not stack.empty()){
+				current = stack.back();
 				stack.pop_back();
 			}
 		}
 	}
-	StigmergyWorld::showWorld();
+	showWorld();
 }
 
 
