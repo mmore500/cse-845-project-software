@@ -20,14 +20,18 @@ using namespace std;
 
 class StigmergyWorld : public AbstractWorld {
 private:
+	int xDim, yDim,lifeTime;
+	vector<vector<int>> world;
 	int inputSize = 1;
 	int outputSize = 1;
 	void generateMap();
-	int lifeTime = 1;
+	void showWorld();
 public:
 	//User Parameters
 	static shared_ptr<ParameterLink<int>> evaluationsPerGenerationPL;
 	static shared_ptr<ParameterLink<int>> lifeTimePL;
+	static shared_ptr<ParameterLink<int>> xDimPL;
+	static shared_ptr<ParameterLink<int>> yDimPL;
 	//MABE Parameters
 	static shared_ptr<ParameterLink<string>> groupNamePL;
 	static shared_ptr<ParameterLink<string>> brainNamePL;
