@@ -73,12 +73,15 @@ private:
 
 		cell(int _x,int _y){x=_x; y=_y;};
 	};
+
+	double wallPercent;
 public:
 	//User Parameters
 	static shared_ptr<ParameterLink<int>> evaluationsPerGenerationPL;
 	static shared_ptr<ParameterLink<int>> lifeTimePL;
 	static shared_ptr<ParameterLink<int>> xDimPL;
 	static shared_ptr<ParameterLink<int>> yDimPL;
+	static shared_ptr<ParameterLink<double>> wallPercentPL;
 	//MABE Parameters
 	static shared_ptr<ParameterLink<string>> groupNamePL;
 	static shared_ptr<ParameterLink<string>> brainNamePL;

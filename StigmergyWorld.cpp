@@ -14,6 +14,7 @@ shared_ptr<ParameterLink<int>> StigmergyWorld::evaluationsPerGenerationPL = Para
 shared_ptr<ParameterLink<int>> StigmergyWorld::lifeTimePL = Parameters::register_parameter("WORLD_STIGMERGY-lifeTime", 1000, "Number of time units an agent lives for");
 shared_ptr<ParameterLink<int>> StigmergyWorld::xDimPL = Parameters::register_parameter("WORLD_STIGMERGY-xDim", 15, "width of world");
 shared_ptr<ParameterLink<int>> StigmergyWorld::yDimPL = Parameters::register_parameter("WORLD_STIGMERGY-yDim", 15, "height of world");
+shared_ptr<ParameterLink<double>> StigmergyWorld::wallPercentPL = Parameters::register_parameter("WORLD_STIGMERGY-wallPercent", 0.75, "percentage of walls to remove, BETWEEN 0 and 1");
 
 
 //MABE Parameters
@@ -30,6 +31,7 @@ StigmergyWorld::StigmergyWorld(shared_ptr<ParametersTable> _PT):AbstractWorld(_P
 	if (yDim % 2 == 0){
 		yDim++;
 	}
+	wallPercent = wallPercentPL->get(PT);
 	// columns to be added to ave file
 	popFileColumns.clear();
 	popFileColumns.push_back("score");
@@ -67,6 +69,20 @@ void StigmergyWorld::generateMap(){
 			}
 		}
 	}
+	// remove some percentage of walls from the maze to create open spaces
+	auto walls = ((xDim - 3)*(yDim - 3)) / 2; //equation found by working out on paper
+	auto quota = (int)(walls * wallPercent);
+	
+	while(quota > 0){
+		//printf("%i\n",quota);
+		auto x = Random::getIndex(xDim -2) + 1;
+		auto y = Random::getIndex(yDim -2) + 1;
+		if (world[x][y] == 1){
+			world[x][y] = 0;
+			quota --;
+		}
+	}
+
 	showWorld();
 }
 
