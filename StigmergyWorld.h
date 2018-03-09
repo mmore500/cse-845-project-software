@@ -20,14 +20,46 @@ using namespace std;
 
 class StigmergyWorld : public AbstractWorld {
 private:
-	int inputSize = 1;
-	int outputSize = 1;
+
+	//vision input
+	int visionConeArea = 9;
+	// walls (OOB, obstacles), food, home, other agnets
+	int visionConeSize =  visionConeArea * 4;
+	//(optional) compass
+	//NS/EW
+	int compassSize = 2;
+
+	//stigmergy signal location input (3x3 grid)
+	int stigmergyLocationInputSize = 9;
+
+	//stigmergy signal content input
+		//under agent
+	int stigmergyContentSize;
+
+	//food in hand (bit)
+	int foodInHandSize = 1;
+
+	int inputSize;
+
+	// either you do or you do not, there is no try
+	int stigmergyWriteControlSize = 1;
+
+	// two bit tank movement
+	int movementControlSize = 2;
+
+	// either you do or you do not, there is no try
+	// one bit to control whether read stigmergy
+	int stigmergyReadControlSize = 1;
+
+	int outputSize;
 	void generateMap();
-	int lifeTime = 1;
+	int lifeTime;
+
 public:
 	//User Parameters
 	static shared_ptr<ParameterLink<int>> evaluationsPerGenerationPL;
 	static shared_ptr<ParameterLink<int>> lifeTimePL;
+	static shared_ptr<ParameterLink<int>> stigmergyBitsPL;
 	//MABE Parameters
 	static shared_ptr<ParameterLink<string>> groupNamePL;
 	static shared_ptr<ParameterLink<string>> brainNamePL;
@@ -49,4 +81,3 @@ public:
 		return { { groupNamePL->get(PT),{ "B:" + brainNamePL->get(PT) + "," + to_string(inputSize)+ "," + to_string(outputSize) } } };
 	}
 };
-
