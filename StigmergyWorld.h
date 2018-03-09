@@ -52,14 +52,68 @@ private:
 	int stigmergyReadControlSize = 1;
 
 	int outputSize;
-	void generateMap();
-	int lifeTime;
 
+	int xDim, yDim, lifeTime;
+	vector<vector<int>> world;
+	void generateMap();
+	void showWorld();
+	struct offsets{
+		int x(int dir){
+			int r = 0;
+			switch(dir){
+				case 1:
+					r = 1;
+					break;
+				case 3:
+					r = -1;
+					break;
+			}
+			return r;
+		}
+
+		int y(int dir){
+			int r = 0;
+			switch(dir){
+				case 0:
+					r = -1;
+					break;
+				case 2:
+					r = 1;
+					break;
+			}
+			return r;
+		}
+	};
+	static struct offsets o;
+
+	//used in map generation
+	struct cell{
+		int x,y;
+
+		bool nextIsInBounds(int xDim, int yDim, int dir){
+			return (x + 2*o.x(dir) >0) && (x + 2*o.x(dir) < xDim) && (y + 2*o.y(dir) > 0) && (y + 2*o.y(dir) < yDim);
+		}
+
+		bool nextIsUnvisited(int dir, vector<vector<int>> w){
+			return w[x+2*o.x(dir)][y+2*o.y(dir)] == 1;
+		}
+
+		cell next(int dir){
+			return cell(x+2*o.x(dir), y+2*o.y(dir));
+		}
+
+		cell(int _x,int _y){x=_x; y=_y;};
+	};
+
+	double wallPercent;
 public:
 	//User Parameters
 	static shared_ptr<ParameterLink<int>> evaluationsPerGenerationPL;
 	static shared_ptr<ParameterLink<int>> lifeTimePL;
 	static shared_ptr<ParameterLink<int>> stigmergyBitsPL;
+	static shared_ptr<ParameterLink<int>> xDimPL;
+	static shared_ptr<ParameterLink<int>> yDimPL;
+	static shared_ptr<ParameterLink<double>> wallPercentPL;
 	//MABE Parameters
 	static shared_ptr<ParameterLink<string>> groupNamePL;
 	static shared_ptr<ParameterLink<string>> brainNamePL;

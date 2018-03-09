@@ -13,6 +13,9 @@
 shared_ptr<ParameterLink<int>> StigmergyWorld::evaluationsPerGenerationPL = Parameters::register_parameter("WORLD_STIGMERGY-evaluationsPerGeneration", 1, "Number of times to test each Genome per generation (useful with non-deterministic brains)");
 shared_ptr<ParameterLink<int>> StigmergyWorld::lifeTimePL = Parameters::register_parameter("WORLD_STIGMERGY-lifeTime", 1000, "Number of time units an agent lives for");
 shared_ptr<ParameterLink<int>> StigmergyWorld::stigmergyBitsPL = Parameters::register_parameter("WORLD_STIGMERGY-stigmergyBits", 1, "Number of bits in stigmergic signal");
+shared_ptr<ParameterLink<int>> StigmergyWorld::xDimPL = Parameters::register_parameter("WORLD_STIGMERGY-xDim", 15, "width of world");
+shared_ptr<ParameterLink<int>> StigmergyWorld::yDimPL = Parameters::register_parameter("WORLD_STIGMERGY-yDim", 15, "height of world");
+shared_ptr<ParameterLink<double>> StigmergyWorld::wallPercentPL = Parameters::register_parameter("WORLD_STIGMERGY-wallPercent", 0.75, "percentage of walls to remove, BETWEEN 0 and 1");
 
 
 //MABE Parameters
@@ -31,6 +34,16 @@ StigmergyWorld::StigmergyWorld(shared_ptr<ParametersTable> _PT):AbstractWorld(_P
 	stigmergyReadControlSize + movementControlSize
 	)
 {
+	lifeTime = lifeTimePL->get(PT);
+	xDim = xDimPL->get(PT);
+	if (xDim % 2 == 0){
+		xDim++;
+	}
+	yDim = yDimPL->get(PT);
+	if (yDim % 2 == 0){
+		yDim++;
+	}
+	wallPercent = wallPercentPL->get(PT);
 	// columns to be added to ave file
 	popFileColumns.clear();
 	popFileColumns.push_back("score");
@@ -38,8 +51,63 @@ StigmergyWorld::StigmergyWorld(shared_ptr<ParametersTable> _PT):AbstractWorld(_P
 
 //Generates a map to evaluate organisms in
 void StigmergyWorld::generateMap(){
-	return;
+	//The following algorithm performs a random DFS from the top left corner of the maze
+	//to construct the hallways. Note: outer most band is a buffer and should be left solid.
+
+	vector<cell> stack;
+	auto allOnes = vector<vector<int>>(xDim, vector<int>(yDim, 1));
+	world = allOnes;
+	auto current = cell(1,1);
+	world[1][1] = 0;
+	stack.push_back(current);
+
+	while(not stack.empty()){
+		vector<cell> possibleNext;
+		for(int dir = 0; dir < 4; dir++){
+			if(current.nextIsInBounds(xDim, yDim, dir) and current.nextIsUnvisited(dir, world)){
+					possibleNext.push_back(current.next(dir));
+			}
+		}
+		if(not possibleNext.empty()){
+			auto target = possibleNext[Random::getIndex(possibleNext.size())];
+			stack.push_back(current);
+			world[target.x][target.y] = 0;
+			world[(current.x + target.x) / 2][(current.y + target.y) / 2] = 0;
+			current = target;
+		} else {
+			if(not stack.empty()){
+				current = stack.back();
+				stack.pop_back();
+			}
+		}
+	}
+	// remove some percentage of walls from the maze to create open spaces
+	auto walls = ((xDim - 3)*(yDim - 3)) / 2; //equation found by working out on paper
+	auto quota = (int)(walls * wallPercent);
+
+	while(quota > 0){
+		//printf("%i\n",quota);
+		auto x = Random::getIndex(xDim -2) + 1;
+		auto y = Random::getIndex(yDim -2) + 1;
+		if (world[x][y] == 1){
+			world[x][y] = 0;
+			quota --;
+		}
+	}
+
+	showWorld();
 }
+
+
+void StigmergyWorld::showWorld(){
+	for(int j=0;j<yDim;j++){
+		for(int i=0;i<xDim;i++){
+			printf("%s",world[i][j] ? "██":"  ");
+		}
+		printf("\n");
+	}
+}
+
 
 void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int visualize, int debug) {
 	auto brain = org->brains[brainNamePL->get(PT)];
