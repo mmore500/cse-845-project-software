@@ -94,7 +94,28 @@ void StigmergyWorld::generateMap(){
 			quota --;
 		}
 	}
+	int foodNum = 5;
+	while (foodNum > 0){
+		auto x = Random::getIndex(xDim -2) + 1;
+		auto y = Random::getIndex(yDim -2) + 1;
+		if (world[x][y] == 0){
+			world[x][y] = 'F';
+			foodNum --;
+		}
+	}
 
+	int homeNum = 1;
+	while (homeNum > 0){
+		auto x = Random::getIndex(xDim -2) + 1;
+		auto y = Random::getIndex(yDim -2) + 1;
+		if (world[x][y] == 0){
+			agentX = x;
+			agentY = y;
+			agentD = Random::getIndex(4);
+			world[x][y] = 'H';
+			homeNum --;
+		}
+	}
 	showWorld();
 }
 
@@ -102,7 +123,34 @@ void StigmergyWorld::generateMap(){
 void StigmergyWorld::showWorld(){
 	for(int j=0;j<yDim;j++){
 		for(int i=0;i<xDim;i++){
-			printf("%s",world[i][j] ? "██":"  ");
+			if (i == agentX && j == agentY){
+				switch(agentD){
+					case 0:
+					printf("%s", "^ ");
+					break;
+					case 1:
+					printf("%s","> ");
+					break;
+					case 2:
+					printf("%s"," v");
+					break;
+					case 3:
+					printf("%s"," <");
+				}
+			}else{
+				if (world[i][j] == 0){
+					printf("%s","  ");
+				}
+				else if (world[i][j] == 1){
+					printf("%s","██");
+				}
+				else if (world[i][j] == 'H'){
+					printf("%s","HH");
+				}
+				else if (world[i][j] == 'F'){
+					printf("%s","FF");
+				}
+			}
 		}
 		printf("\n");
 	}
@@ -163,6 +211,26 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 			}
 			for(int cur = 0; cur < movementControl.size(); ++cur, ++o) {
 				movementControl[cur] = Bit(brain->readOutput(o));
+			}
+			//test fitness function
+			auto moveAction = movementControl[0] + 2*movementControl[1];
+			switch (moveAction){
+				case 0:
+				break;
+				case 1:
+				//turn left
+				agentD = (agentD - 1) % 4;
+				break;
+				case 2:
+				//turn right
+				agentD = (agentD + 1) % 4;
+				break;
+				case 3:
+				//move forward
+				agentX = agentX + off.x(agentD);
+				agentY = agentY + off.y(agentD);
+				score = score + (1.0/1000.0);
+				showWorld();
 			}
 			for(int cur = 0; cur < stigmergyContentOutput.size(); ++cur, ++o) {
 				stigmergyContentOutput[cur] = Bit(brain->readOutput(o));

@@ -20,6 +20,8 @@ using namespace std;
 
 class StigmergyWorld : public AbstractWorld {
 private:
+	//current location and direction of the agent, begins at home location facing a random direction.
+	int agentX, agentY, agentD;
 
 	//vision input
 	int visionConeArea = 9;
@@ -84,22 +86,22 @@ private:
 			return r;
 		}
 	};
-	static struct offsets o;
+	static struct offsets off;
 
 	//used in map generation
 	struct cell{
 		int x,y;
 
 		bool nextIsInBounds(int xDim, int yDim, int dir){
-			return (x + 2*o.x(dir) >0) && (x + 2*o.x(dir) < xDim) && (y + 2*o.y(dir) > 0) && (y + 2*o.y(dir) < yDim);
+			return (x + 2*off.x(dir) >0) && (x + 2*off.x(dir) < xDim) && (y + 2*off.y(dir) > 0) && (y + 2*off.y(dir) < yDim);
 		}
 
 		bool nextIsUnvisited(int dir, vector<vector<int>> w){
-			return w[x+2*o.x(dir)][y+2*o.y(dir)] == 1;
+			return w[x+2*off.x(dir)][y+2*off.y(dir)] == 1;
 		}
 
 		cell next(int dir){
-			return cell(x+2*o.x(dir), y+2*o.y(dir));
+			return cell(x+2*off.x(dir), y+2*off.y(dir));
 		}
 
 		cell(int _x,int _y){x=_x; y=_y;};
