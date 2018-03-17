@@ -25,8 +25,11 @@ private:
 
 	//vision input
 	int visionConeArea = 9;
-	// walls (OOB, obstacles), food, home, other agnets
-	int visionConeSize =  visionConeArea * 4;
+	// walls (OOB, obstacles), food, home, other agnets, empty
+	int visionConeBits = 5;
+
+	std::vector<std::vector<std::vector<int>>> defineVisionCone();
+	std::vector<std::vector<std::vector<int>>> visionConeOffsets;
 	//(optional) compass
 	//NS/EW
 	int compassSize = 2;

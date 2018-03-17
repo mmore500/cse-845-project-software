@@ -26,7 +26,7 @@ StigmergyWorld::StigmergyWorld(shared_ptr<ParametersTable> _PT):AbstractWorld(_P
 , lifeTime(lifeTimePL->get(PT))
 , stigmergyContentSize(stigmergyBitsPL->get(PT))
 , inputSize(
-	visionConeSize + compassSize + stigmergyLocationInputSize +
+	visionConeArea * visionConeBits + compassSize + stigmergyLocationInputSize +
 	stigmergyContentSize + foodInHandSize
 	)
 , outputSize(
@@ -44,10 +44,55 @@ StigmergyWorld::StigmergyWorld(shared_ptr<ParametersTable> _PT):AbstractWorld(_P
 		yDim++;
 	}
 	wallPercent = wallPercentPL->get(PT);
+	visionConeOffsets = defineVisionCone();
 	// columns to be added to ave file
 	popFileColumns.clear();
 	popFileColumns.push_back("score");
 }
+
+std::vector<std::vector<std::vector<int>>> StigmergyWorld::defineVisionCone(){
+	std::vector<std::vector<std::vector<int>>> visionConeOffsets(visionConeArea, std::vector<std::vector<int>>(4, vector<int>(2, 0)));
+	// loops over all 4 directions 0-3
+	for (int d = 0; d < 4; d++){
+		//k tracks the ID of the vision cone location 0-8
+		int k = 0;
+		//loops over distances away from the agent in the forward direction 1-3
+		for (int i = 1; i < 4 ; i++){
+			//loops over the width, centered at the agent, conditional on distance away 0-0, (-1)-1, (-2)-2, adjusted to preserve rotational sym.
+			if (d == 1){
+				for (int j = 1-i ; j < i ; j++){
+					visionConeOffsets[k][d][0] = i; //x
+					visionConeOffsets[k][d][1] = j; //y
+					printf("%i %i %i %i \n", k, d, i, j);
+					k++;
+				}
+			}else if (d == 3){
+				for (int j = i-1 ; j > -i ; j--){
+					visionConeOffsets[k][d][0] = -i; //x
+					visionConeOffsets[k][d][1] = j; //y
+					printf("%i %i %i %i \n", k, d, -i, j);
+					k++;
+				}
+			}else if (d == 2){
+				for (int j = i-1 ; j > -i ; j--){
+					visionConeOffsets[k][d][0] = j; //x
+					visionConeOffsets[k][d][1] = i; //y
+					printf("%i %i %i %i \n", k, d, i, j);
+					k++;
+				}
+			}else{ //(d == 0)
+				for (int j = 1-i ; j < i ; j++){
+					visionConeOffsets[k][d][0] = j; //x
+					visionConeOffsets[k][d][1] = -i; //y
+					printf("%i %i %i %i \n", k, d, -i, j);
+					k++;
+				}
+			}
+		}
+	}
+	return visionConeOffsets;
+}
+
 
 //Generates a map to evaluate organisms in
 void StigmergyWorld::generateMap(){
@@ -86,7 +131,6 @@ void StigmergyWorld::generateMap(){
 	auto quota = (int)(walls * wallPercent);
 
 	while(quota > 0){
-		//printf("%i\n",quota);
 		auto x = Random::getIndex(xDim -2) + 1;
 		auto y = Random::getIndex(yDim -2) + 1;
 		if (world[x][y] == 1){
@@ -116,7 +160,7 @@ void StigmergyWorld::generateMap(){
 			homeNum --;
 		}
 	}
-	showWorld();
+	//showWorld();
 }
 
 
@@ -126,16 +170,16 @@ void StigmergyWorld::showWorld(){
 			if (i == agentX && j == agentY){
 				switch(agentD){
 					case 0:
-					printf("%s", "^ ");
-					break;
+						printf("%s","^ ");
+						break;
 					case 1:
-					printf("%s","> ");
-					break;
+						printf("%s","> ");
+						break;
 					case 2:
-					printf("%s"," v");
-					break;
+						printf("%s"," v");
+						break;
 					case 3:
-					printf("%s"," <");
+						printf("%s"," <");
 				}
 			}else{
 				if (world[i][j] == 0){
@@ -162,7 +206,6 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 	for (int eval = 0; eval < evaluationsPerGenerationPL->get(PT); eval++) {
 
 		// inputs
-		std::vector<int> visionCone(visionConeSize);
 		std::vector<int> compass(compassSize);
 		std::vector<int> stigmergyLocationInput(stigmergyLocationInputSize);
 		std::vector<int> stigmergyContentInput(stigmergyContentSize);
@@ -183,10 +226,17 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 
 			// set inputs
 			int i = 0;
-
-			for(int cur = 0; cur < visionCone.size(); ++cur, ++i) {
-				brain->setInput(i, visionCone[cur]);
+			// VISION CONE ----------------------------------------------------------------------------
+			for(int cur = 0; cur < visionConeArea; cur++) {
+				auto vcoX = visionConeOffsets[cur][agentD][0];
+				auto vcoY = visionConeOffsets[cur][agentD][1];
+				brain->setInput(i, world[vcoX][vcoY] == 0);
+				brain->setInput(i+1, world[vcoX][vcoY] == 1);
+				brain->setInput(i+2, world[vcoX][vcoY] == 'F');
+				brain->setInput(i+3, world[vcoX][vcoY] == 'H');
+				brain->setInput(i+4, world[vcoX][vcoY] == 'A');
 			}
+			//end VISION   ----------------------------------------------------------------------------
 			for(int cur = 0; cur < compass.size(); ++cur, ++i) {
 				brain->setInput(i, compass[cur]);
 			}
@@ -209,10 +259,10 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 			for(int cur = 0; cur < stigmergyWriteControl.size(); ++cur, ++o) {
 				stigmergyWriteControl[cur] = Bit(brain->readOutput(o));
 			}
+			//movment begins ----------------------------------------------------------------------------
 			for(int cur = 0; cur < movementControl.size(); ++cur, ++o) {
 				movementControl[cur] = Bit(brain->readOutput(o));
 			}
-			//test fitness function
 			auto moveAction = movementControl[0] + 2*movementControl[1];
 			switch (moveAction){
 				case 0:
@@ -220,6 +270,10 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 				case 1:
 				//turn left
 				agentD = (agentD - 1) % 4;
+				// takes ABS(agentD) because when a is negative in a%b then (a%b) will also be negative
+				if (agentD < 0){
+					agentD = agentD * -1;
+				}
 				break;
 				case 2:
 				//turn right
@@ -227,11 +281,14 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 				break;
 				case 3:
 				//move forward
-				agentX = agentX + off.x(agentD);
-				agentY = agentY + off.y(agentD);
-				score = score + (1.0/1000.0);
-				showWorld();
+				if (world[agentX + off.x(agentD)][agentY + off.y(agentD)] != 1){
+					agentX = agentX + off.x(agentD);
+					agentY = agentY + off.y(agentD);
+					score = score + (1.0/1000.0);
+					showWorld();
+				}
 			}
+			//movment ends ----------------------------------------------------------------------------
 			for(int cur = 0; cur < stigmergyContentOutput.size(); ++cur, ++o) {
 				stigmergyContentOutput[cur] = Bit(brain->readOutput(o));
 			}
