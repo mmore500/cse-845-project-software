@@ -229,11 +229,22 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 			for(int cur = 0; cur < visionConeArea; cur++) {
 				auto vcoX = visionConeOffsets[cur][agentD][0];
 				auto vcoY = visionConeOffsets[cur][agentD][1];
-				brain->setInput(i, world[vcoX][vcoY] == 0);
-				brain->setInput(i+1, world[vcoX][vcoY] == 1);
-				brain->setInput(i+2, world[vcoX][vcoY] == 'F');
-				brain->setInput(i+3, world[vcoX][vcoY] == 'H');
-				brain->setInput(i+4, world[vcoX][vcoY] == 'A');
+				//check if vision cone cell is in bounds before filling in the information from that cell
+				if ((agentX + vcoX) >= 0 && (agentX + vcoX) < xDim && (agentY + vcoY) >=0 && (agentY + vcoY) < yDim){
+					brain->setInput(i, Bit(world[agentX + vcoX][agentY + vcoY] == 0));
+					brain->setInput(i+1, Bit(world[agentX + vcoX][agentY + vcoY] == 1));
+					brain->setInput(i+2, Bit(world[agentX + vcoX][agentY + vcoY] == 'F'));
+					brain->setInput(i+3, Bit(world[agentX + vcoX][agentY + vcoY] == 'H'));
+					brain->setInput(i+4, Bit(world[agentX + vcoX][agentY + vcoY] == 'A'));
+				}
+				else{ // if OOB set to seeing a wall
+					brain->setInput(i, 0);
+					brain->setInput(i+1, 1);
+					brain->setInput(i+2, 0);
+					brain->setInput(i+3, 0);
+					brain->setInput(i+4, 0);
+				}
+				i = i + 5;
 			}
 			//end VISION   ----------------------------------------------------------------------------
 			// compass
