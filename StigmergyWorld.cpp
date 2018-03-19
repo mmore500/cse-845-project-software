@@ -206,7 +206,6 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 	for (int eval = 0; eval < evaluationsPerGenerationPL->get(PT); eval++) {
 
 		// inputs
-		std::vector<int> compass(compassSize);
 		std::vector<int> stigmergyLocationInput(stigmergyLocationInputSize);
 		std::vector<int> stigmergyContentInput(stigmergyContentSize);
 		std::vector<int> foodInHand(foodInHandSize);
@@ -263,9 +262,10 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 			for(int cur = 0; cur < stigmergyContentInput.size(); ++cur, ++i) {
 				brain->setInput(i, stigmergyContentInput[cur]);
 			}
-			for(int cur = 0; cur < foodInHand.size(); ++cur, ++i) {
-				brain->setInput(i, foodInHand[cur]);
-			}
+			//food yesno
+			brain->setInput(i, Bit(agentF));
+			i++;
+			//end food yesno
 
 			// update brain
 			brain->update();
@@ -302,7 +302,17 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 					agentX = agentX + off.x(agentD);
 					agentY = agentY + off.y(agentD);
 					score = score + (1.0/1000.0);
-					showWorld();
+					// pickup food
+					if (world[agentX][agentY] == 'F' and !agentF){
+						agentF = true;
+						score = score + 1;
+					}
+					//drop off food
+					if (world[agentX][agentY] == 'H' and agentF){
+						agentF = false;
+						score = score + 10;
+					}
+					//showWorld();
 				}
 			}
 			//movment ends ----------------------------------------------------------------------------

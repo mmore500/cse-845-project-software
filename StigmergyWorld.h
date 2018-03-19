@@ -23,6 +23,9 @@ private:
 	//current location and direction of the agent, begins at home location facing a random direction.
 	int agentX, agentY, agentD;
 
+	//stores if the agent has food or not
+	bool agentF;
+
 	//vision input
 	int visionConeArea = 8;
 	// walls (OOB, obstacles), food, home, other agnets, empty
