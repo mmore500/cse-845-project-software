@@ -24,7 +24,7 @@ private:
 	int agentX, agentY, agentD;
 
 	//vision input
-	int visionConeArea = 9;
+	int visionConeArea = 8;
 	// walls (OOB, obstacles), food, home, other agnets, empty
 	int visionConeBits = 5;
 

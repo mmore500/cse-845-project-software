@@ -54,34 +54,34 @@ std::vector<std::vector<std::vector<int>>> StigmergyWorld::defineVisionCone(){
 	std::vector<std::vector<std::vector<int>>> visionConeOffsets(visionConeArea, std::vector<std::vector<int>>(4, vector<int>(2, 0)));
 	// loops over all 4 directions 0-3
 	for (int d = 0; d < 4; d++){
-		//k tracks the ID of the vision cone location 0-8
+		//k tracks the ID of the vision cone location 0-7
 		int k = 0;
-		//loops over distances away from the agent in the forward direction 1-3
-		for (int i = 1; i < 4 ; i++){
+		//loops over distances away from the agent in the forward direction 1-2
+		for (int i = 1; i < 3 ; i++){
 			//loops over the width, centered at the agent, conditional on distance away 0-0, (-1)-1, (-2)-2, adjusted to preserve rotational sym.
 			if (d == 1){
-				for (int j = 1-i ; j < i ; j++){
+				for (int j = -i ; j < i+1 ; j++){
 					visionConeOffsets[k][d][0] = i; //x
 					visionConeOffsets[k][d][1] = j; //y
 					printf("%i %i %i %i \n", k, d, i, j);
 					k++;
 				}
 			}else if (d == 3){
-				for (int j = i-1 ; j > -i ; j--){
+				for (int j = i ; j > -i-1 ; j--){
 					visionConeOffsets[k][d][0] = -i; //x
 					visionConeOffsets[k][d][1] = j; //y
 					printf("%i %i %i %i \n", k, d, -i, j);
 					k++;
 				}
 			}else if (d == 2){
-				for (int j = i-1 ; j > -i ; j--){
+				for (int j = i ; j > -i-1 ; j--){
 					visionConeOffsets[k][d][0] = j; //x
 					visionConeOffsets[k][d][1] = i; //y
 					printf("%i %i %i %i \n", k, d, i, j);
 					k++;
 				}
 			}else{ //(d == 0)
-				for (int j = 1-i ; j < i ; j++){
+				for (int j = -i ; j < i+1 ; j++){
 					visionConeOffsets[k][d][0] = j; //x
 					visionConeOffsets[k][d][1] = -i; //y
 					printf("%i %i %i %i \n", k, d, -i, j);
@@ -237,9 +237,26 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 				brain->setInput(i+4, world[vcoX][vcoY] == 'A');
 			}
 			//end VISION   ----------------------------------------------------------------------------
-			for(int cur = 0; cur < compass.size(); ++cur, ++i) {
-				brain->setInput(i, compass[cur]);
+			// compass
+			switch(agentD){
+				case 0:
+				brain->setInput(i, 0);
+				brain->setInput(i+1, 0);
+				break;
+				case 1:
+				brain->setInput(i, 1);
+				brain->setInput(i+1, 0);
+				break;
+				case 2:
+				brain->setInput(i, 0);
+				brain->setInput(i+1, 1);
+				break;
+				case 3:
+				brain->setInput(i, 1);
+				brain->setInput(i+1, 1);
 			}
+			i = i + 2;
+			//  end compass
 			for(int cur = 0; cur < stigmergyLocationInput.size(); ++cur, ++i) {
 				brain->setInput(i, stigmergyLocationInput[cur]);
 			}
