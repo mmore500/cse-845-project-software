@@ -42,8 +42,9 @@ private:
 	std::vector<std::vector<std::vector<int>>> defineStigmergySensor();
 	std::vector<std::vector<std::vector<int>>> stigmergyProximitySensorOffsets;
 
-	//stigmergy signal content input
-		//under agent
+	//stores if agent wishes to read  or write stigmergy message
+	bool agentR, agentW;
+	//bits per stigmergy message
 	int stigmergyContentSize;
 
 	//food in hand (bit)
@@ -68,6 +69,7 @@ private:
 	vector<vector<int>> stigmergyMap;
 	void generateMap();
 	void showWorld();
+	void showStigmergyMap();
 	struct offsets{
 		int x(int dir){
 			int r = 0;

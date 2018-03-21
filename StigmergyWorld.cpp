@@ -251,6 +251,16 @@ void StigmergyWorld::showWorld(){
 	}
 }
 
+void StigmergyWorld::showStigmergyMap(){
+	for(int j=0;j<yDim;j++){
+		for(int i=0;i<xDim;i++){
+			printf("%i",stigmergyMap[i][j]);
+		}
+		printf("\n");
+	}
+	printf("------------------\n");
+}
+
 
 void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int visualize, int debug) {
 	auto brain = org->brains[brainNamePL->get(PT)];
@@ -294,9 +304,10 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 					brain->setInput(i+3, 0);
 					brain->setInput(i+4, 0);
 				}
-				i = i + 5;
+				i += 5;
 			}
 			//end VISION   ----------------------------------------------------------------------------
+
 			// compass
 			switch(agentD){
 				case 0:
@@ -315,8 +326,9 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 				brain->setInput(i, 1);
 				brain->setInput(i+1, 1);
 			}
-			i = i + 2;
+			i += 2;
 			//  end compass
+
 			//stigmergy proximity sensor ----------------------------------------------------------------------------
 			for(int cur = 0; cur < stigmergyLocationInputSize; cur++, i++) {
 				auto spsoX = stigmergyProximitySensorOffsets[cur][agentD][0];
@@ -330,23 +342,50 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 				}
 			}
 			//end stigmergy proximity sensor ----------------------------------------------------------------------------
-			for(int cur = 0; cur < stigmergyContentInput.size(); ++cur, ++i) {
-				brain->setInput(i, stigmergyContentInput[cur]);
+
+			//stigmergy message sensor
+			for( int cur = 0; cur < stigmergyContentSize; cur++, i++){
+				if (agentR){
+					brain->setInput(i, Bit((stigmergyMap[agentX][agentY] >> cur) % 2));
+
+				}else{
+					brain->setInput(i, 0);
+				}
 			}
-			//food yesno
+			//end stigmergy message sensor
+
+			//food yesno ----------------------------------------------------------------------------
 			brain->setInput(i, Bit(agentF));
 			i++;
-			//end food yesno
+			//end food yesno ----------------------------------------------------------------------------
 
-			// update brain
+			// update brain ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 			brain->update();
 
-			// read outputs
+			// read outputs ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 			int o = 0;
 
+			//stigmergy write
 			for(int cur = 0; cur < stigmergyWriteControl.size(); ++cur, ++o) {
 				stigmergyWriteControl[cur] = Bit(brain->readOutput(o));
 			}
+
+			agentW = (bool)stigmergyWriteControl[0];
+		
+			for(int cur = 0; cur < stigmergyContentOutput.size(); ++cur, ++o) {
+				stigmergyContentOutput[cur] = Bit(brain->readOutput(o));
+			}
+
+			if (agentW){
+				int val = 0;
+				for (int cur = 0; cur < stigmergyContentSize; cur++){
+					val += stigmergyContentOutput[cur] << cur;
+				}
+				stigmergyMap[agentX][agentY] = val;
+				//showStigmergyMap();
+			}
+			//end stigmergy write
+
 			//movment begins ----------------------------------------------------------------------------
 			for(int cur = 0; cur < movementControl.size(); ++cur, ++o) {
 				movementControl[cur] = Bit(brain->readOutput(o));
@@ -381,20 +420,21 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 					//drop off food
 					if (world[agentX][agentY] == 'H' and agentF){
 						agentF = false;
-						score = score + 10;
+						score = score + 0.5;
 					}
 					//showWorld();
 				}
 			}
 			//movment ends ----------------------------------------------------------------------------
-			for(int cur = 0; cur < stigmergyContentOutput.size(); ++cur, ++o) {
-				stigmergyContentOutput[cur] = Bit(brain->readOutput(o));
-			}
+			//read control
 			for(int cur = 0; cur < stigmergyReadControl.size(); ++cur, ++o) {
 				stigmergyReadControl[cur] = Bit(brain->readOutput(o));
 			}
+			agentR = (bool)stigmergyReadControl[0];
+			//end read control
 
 		}
+		//showStigmergyMap();
 		org->dataMap.append("score", score);
 	}
 }
