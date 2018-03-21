@@ -185,13 +185,14 @@ void StigmergyWorld::generateMap(){
 			quota --;
 		}
 	}
-	int foodNum = 5;
+	int foodNum = 1;
 	while (foodNum > 0){
 		auto x = Random::getIndex(xDim -2) + 1;
 		auto y = Random::getIndex(yDim -2) + 1;
 		if (world[x][y] == 0){
 			world[x][y] = 'F';
 			foodNum --;
+			foodCount = Random::getIndex(5) + 1;
 		}
 	}
 
@@ -212,6 +213,20 @@ void StigmergyWorld::generateMap(){
 	//Build stigmergyMap
 	auto allZeros = vector<vector<int>>(xDim, vector<int>(yDim, 0));
 	stigmergyMap = allZeros;
+}
+
+void StigmergyWorld::spawnFood(int x, int y){
+	world[x][y] = 0;
+	int foodNum = 1;
+	while (foodNum > 0){
+		auto x = Random::getIndex(xDim -2) + 1;
+		auto y = Random::getIndex(yDim -2) + 1;
+		if (world[x][y] == 0){
+			world[x][y] = 'F';
+			foodNum --;
+			foodCount = Random::getIndex(5) + 1;
+		}
+	}
 }
 
 
@@ -415,6 +430,10 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 					// pickup food
 					if (world[agentX][agentY] == 'F' and !agentF){
 						agentF = true;
+						foodCount --;
+						if (foodCount < 1){
+							spawnFood(agentX, agentY);
+						}
 						score = score + 1;
 					}
 					//drop off food

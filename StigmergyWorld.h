@@ -50,6 +50,10 @@ private:
 	//food in hand (bit)
 	int foodInHandSize = 1;
 
+	//tracks how much food is left at the currently available location
+	int foodCount;
+	void spawnFood(int x, int y);
+
 	int inputSize;
 
 	// either you do or you do not, there is no try
