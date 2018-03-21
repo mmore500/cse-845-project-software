@@ -44,14 +44,17 @@ StigmergyWorld::StigmergyWorld(shared_ptr<ParametersTable> _PT):AbstractWorld(_P
 		yDim++;
 	}
 	wallPercent = wallPercentPL->get(PT);
+
 	visionConeOffsets = defineVisionCone();
+	stigmergyProximitySensorOffsets = defineStigmergySensor();
+
 	// columns to be added to ave file
 	popFileColumns.clear();
 	popFileColumns.push_back("score");
 }
 
 std::vector<std::vector<std::vector<int>>> StigmergyWorld::defineVisionCone(){
-	std::vector<std::vector<std::vector<int>>> visionConeOffsets(visionConeArea, std::vector<std::vector<int>>(4, vector<int>(2, 0)));
+	std::vector<std::vector<std::vector<int>>> visionConeOffsets(stigmergyLocationInputSize, std::vector<std::vector<int>>(4, vector<int>(2, 0)));
 	// loops over all 4 directions 0-3
 	for (int d = 0; d < 4; d++){
 		//k tracks the ID of the vision cone location 0-7
@@ -91,6 +94,50 @@ std::vector<std::vector<std::vector<int>>> StigmergyWorld::defineVisionCone(){
 		}
 	}
 	return visionConeOffsets;
+}
+
+
+std::vector<std::vector<std::vector<int>>> StigmergyWorld::defineStigmergySensor(){
+	std::vector<std::vector<std::vector<int>>> stigmergyProximitySensorOffsets(stigmergyLocationInputSize, std::vector<std::vector<int>>(4, vector<int>(2, 0)));
+	// loops over all 4 directions 0-3
+	for (int d = 0; d < 4; d++){
+		//k tracks the ID of the SPS location 0-8
+		int k = 0;
+		//loops over distances away from the agent in the forward direction 1-(-1)
+		for (int i = 1; i > -2 ; i--){
+			//loops over the width, centered at the agent,  (-1)-1, adjusted to preserve rotational sym.
+			if (d == 1){
+				for (int j = -1 ; j < 2 ; j++){
+					visionConeOffsets[k][d][0] = i; //x
+					visionConeOffsets[k][d][1] = j; //y
+					printf("%i %i %i %i \n", k, d, i, j);
+					k++;
+				}
+			}else if (d == 3){
+				for (int j = 1 ; j > -2 ; j--){
+					visionConeOffsets[k][d][0] = -i; //x
+					visionConeOffsets[k][d][1] = j; //y
+					printf("%i %i %i %i \n", k, d, -i, j);
+					k++;
+				}
+			}else if (d == 2){
+				for (int j = 1 ; j > -2 ; j--){
+					visionConeOffsets[k][d][0] = j; //x
+					visionConeOffsets[k][d][1] = i; //y
+					printf("%i %i %i %i \n", k, d, i, j);
+					k++;
+				}
+			}else{ //(d == 0)
+				for (int j = -1 ; j < 2 ; j++){
+					visionConeOffsets[k][d][0] = j; //x
+					visionConeOffsets[k][d][1] = -i; //y
+					printf("%i %i %i %i \n", k, d, -i, j);
+					k++;
+				}
+			}
+		}
+	}
+	return stigmergyProximitySensorOffsets;
 }
 
 
@@ -161,6 +208,10 @@ void StigmergyWorld::generateMap(){
 		}
 	}
 	//showWorld();
+
+	//Build stigmergyMap
+	auto allZeros = vector<vector<int>>(xDim, vector<int>(yDim, 0));
+	stigmergyMap = allZeros;
 }
 
 
@@ -206,7 +257,6 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 	for (int eval = 0; eval < evaluationsPerGenerationPL->get(PT); eval++) {
 
 		// inputs
-		std::vector<int> stigmergyLocationInput(stigmergyLocationInputSize);
 		std::vector<int> stigmergyContentInput(stigmergyContentSize);
 		std::vector<int> foodInHand(foodInHandSize);
 
@@ -267,9 +317,19 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 			}
 			i = i + 2;
 			//  end compass
-			for(int cur = 0; cur < stigmergyLocationInput.size(); ++cur, ++i) {
-				brain->setInput(i, stigmergyLocationInput[cur]);
+			//stigmergy proximity sensor ----------------------------------------------------------------------------
+			for(int cur = 0; cur < stigmergyLocationInputSize; cur++, i++) {
+				auto spsoX = stigmergyProximitySensorOffsets[cur][agentD][0];
+				auto spsoY = stigmergyProximitySensorOffsets[cur][agentD][1];
+				//check if stigmergy cell is in bounds before filling in the information from that cell
+				if ((agentX + spsoX) >= 0 && (agentX + spsoX) < xDim && (agentY + spsoY) >=0 && (agentY + spsoY) < yDim){
+					brain->setInput(i, Bit(stigmergyMap[agentX + spsoX][agentY + spsoY] != 0));
+				}
+				else{ // if OOB set to seeing nothing
+					brain->setInput(i, 0);
+				}
 			}
+			//end stigmergy proximity sensor ----------------------------------------------------------------------------
 			for(int cur = 0; cur < stigmergyContentInput.size(); ++cur, ++i) {
 				brain->setInput(i, stigmergyContentInput[cur]);
 			}

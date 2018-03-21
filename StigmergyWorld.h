@@ -39,6 +39,8 @@ private:
 
 	//stigmergy signal location input (3x3 grid)
 	int stigmergyLocationInputSize = 9;
+	std::vector<std::vector<std::vector<int>>> defineStigmergySensor();
+	std::vector<std::vector<std::vector<int>>> stigmergyProximitySensorOffsets;
 
 	//stigmergy signal content input
 		//under agent
@@ -63,6 +65,7 @@ private:
 
 	int xDim, yDim, lifeTime;
 	vector<vector<int>> world;
+	vector<vector<int>> stigmergyMap;
 	void generateMap();
 	void showWorld();
 	struct offsets{
