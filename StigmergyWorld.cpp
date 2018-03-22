@@ -108,29 +108,29 @@ std::vector<std::vector<std::vector<int>>> StigmergyWorld::defineStigmergySensor
 			//loops over the width, centered at the agent,  (-1)-1, adjusted to preserve rotational sym.
 			if (d == 1){
 				for (int j = -1 ; j < 2 ; j++){
-					visionConeOffsets[k][d][0] = i; //x
-					visionConeOffsets[k][d][1] = j; //y
+					stigmergyProximitySensorOffsets[k][d][0] = i; //x
+					stigmergyProximitySensorOffsets[k][d][1] = j; //y
 					printf("%i %i %i %i \n", k, d, i, j);
 					k++;
 				}
 			}else if (d == 3){
 				for (int j = 1 ; j > -2 ; j--){
-					visionConeOffsets[k][d][0] = -i; //x
-					visionConeOffsets[k][d][1] = j; //y
+					stigmergyProximitySensorOffsets[k][d][0] = -i; //x
+					stigmergyProximitySensorOffsets[k][d][1] = j; //y
 					printf("%i %i %i %i \n", k, d, -i, j);
 					k++;
 				}
 			}else if (d == 2){
 				for (int j = 1 ; j > -2 ; j--){
-					visionConeOffsets[k][d][0] = j; //x
-					visionConeOffsets[k][d][1] = i; //y
+					stigmergyProximitySensorOffsets[k][d][0] = j; //x
+					stigmergyProximitySensorOffsets[k][d][1] = i; //y
 					printf("%i %i %i %i \n", k, d, i, j);
 					k++;
 				}
 			}else{ //(d == 0)
 				for (int j = -1 ; j < 2 ; j++){
-					visionConeOffsets[k][d][0] = j; //x
-					visionConeOffsets[k][d][1] = -i; //y
+					stigmergyProximitySensorOffsets[k][d][0] = j; //x
+					stigmergyProximitySensorOffsets[k][d][1] = -i; //y
 					printf("%i %i %i %i \n", k, d, -i, j);
 					k++;
 				}
@@ -281,10 +281,6 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 	auto brain = org->brains[brainNamePL->get(PT)];
 	for (int eval = 0; eval < evaluationsPerGenerationPL->get(PT); eval++) {
 
-		// inputs
-		std::vector<int> stigmergyContentInput(stigmergyContentSize);
-		std::vector<int> foodInHand(foodInHandSize);
-
 		// outputs
 		std::vector<int> stigmergyWriteControl(stigmergyWriteControlSize);
 		std::vector<int> movementControl(movementControlSize);
@@ -414,7 +410,7 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 				agentD = (agentD - 1) % 4;
 				// takes ABS(agentD) because when a is negative in a%b then (a%b) will also be negative
 				if (agentD < 0){
-					agentD = agentD * -1;
+					agentD = 3;
 				}
 				break;
 				case 2:
@@ -439,7 +435,7 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 					//drop off food
 					if (world[agentX][agentY] == 'H' and agentF){
 						agentF = false;
-						score = score + 0.5;
+						score = score + 1;
 					}
 					//showWorld();
 				}
