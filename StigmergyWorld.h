@@ -43,7 +43,7 @@ private:
 	std::vector<std::vector<std::vector<int>>> stigmergyProximitySensorOffsets;
 
 	//stores if agent wishes to read  or write stigmergy message
-	bool agentR, agentW;
+	//bool agentR, agentW;
 	//bits per stigmergy message
 	int stigmergyContentSize;
 
@@ -57,14 +57,14 @@ private:
 	int inputSize;
 
 	// either you do or you do not, there is no try
-	int stigmergyWriteControlSize = 1;
+	//int stigmergyWriteControlSize = 1;
 
 	// two bit tank movement
 	int movementControlSize = 2;
 
 	// either you do or you do not, there is no try
 	// one bit to control whether read stigmergy
-	int stigmergyReadControlSize = 1;
+	//int stigmergyReadControlSize = 1;
 
 	int outputSize;
 

@@ -30,9 +30,19 @@ StigmergyWorld::StigmergyWorld(shared_ptr<ParametersTable> _PT):AbstractWorld(_P
 	stigmergyContentSize + foodInHandSize
 	)
 , outputSize(
+	stigmergyContentSize +
+	movementControlSize
+	)
+/***
+ * , inputSize(
+	visionConeArea * visionConeBits + compassSize + stigmergyLocationInputSize +
+	stigmergyContentSize + foodInHandSize
+	)
+, outputSize(
 	stigmergyWriteControlSize + stigmergyContentSize +
 	stigmergyReadControlSize + movementControlSize
 	)
+**/	
 {
 	lifeTime = lifeTimePL->get(PT);
 	xDim = xDimPL->get(PT);
@@ -192,7 +202,7 @@ void StigmergyWorld::generateMap(){
 		if (world[x][y] == 0){
 			world[x][y] = 'F';
 			foodNum --;
-			foodCount = Random::getIndex(5) + 1;
+			foodCount = Random::getIndex(5) + 5;
 		}
 	}
 
@@ -224,7 +234,7 @@ void StigmergyWorld::spawnFood(int x, int y){
 		if (world[x][y] == 0){
 			world[x][y] = 'F';
 			foodNum --;
-			foodCount = Random::getIndex(5) + 1;
+			foodCount = Random::getIndex(5) + 5;
 		}
 	}
 }
@@ -282,17 +292,17 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 	for (int eval = 0; eval < evaluationsPerGenerationPL->get(PT); eval++) {
 
 		// outputs
-		std::vector<int> stigmergyWriteControl(stigmergyWriteControlSize);
+		//std::vector<int> stigmergyWriteControl(stigmergyWriteControlSize);
 		std::vector<int> movementControl(movementControlSize);
 		std::vector<int> stigmergyContentOutput(stigmergyContentSize);
-		std::vector<int> stigmergyReadControl(stigmergyReadControlSize);
+		//std::vector<int> stigmergyReadControl(stigmergyReadControlSize);
 
 		brain->resetBrain();
 		double score = 1.0;
 		for (int time = 0; time < StigmergyWorld::lifeTime; time++){
 			//reset brain I/O to avoid agents using deactivated nodes as hidden memory.
-			brain->resetInputs();
-			brain->resetOutputs();
+			//brain->resetInputs();
+			//brain->resetOutputs();
 
 			// set inputs
 			int i = 0;
@@ -356,12 +366,12 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 
 			//stigmergy message sensor
 			for( int cur = 0; cur < stigmergyContentSize; cur++, i++){
-				if (agentR){
+				//if (agentR){
 					brain->setInput(i, Bit((stigmergyMap[agentX][agentY] >> cur) % 2));
 
-				}else{
-					brain->setInput(i, 0);
-				}
+				//}else{
+					//brain->setInput(i, 0);
+				//}
 			}
 			//end stigmergy message sensor
 
@@ -377,24 +387,24 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 			int o = 0;
 
 			//stigmergy write
-			for(int cur = 0; cur < stigmergyWriteControl.size(); ++cur, ++o) {
-				stigmergyWriteControl[cur] = Bit(brain->readOutput(o));
-			}
+			//for(int cur = 0; cur < stigmergyWriteControl.size(); ++cur, ++o) {
+				//stigmergyWriteControl[cur] = Bit(brain->readOutput(o));
+			//}
 
-			agentW = (bool)stigmergyWriteControl[0];
+			//agentW = (bool)stigmergyWriteControl[0];
 		
 			for(int cur = 0; cur < stigmergyContentOutput.size(); ++cur, ++o) {
 				stigmergyContentOutput[cur] = Bit(brain->readOutput(o));
 			}
 
-			if (agentW){
+			//if (agentW){
 				int val = 0;
 				for (int cur = 0; cur < stigmergyContentSize; cur++){
 					val += stigmergyContentOutput[cur] << cur;
 				}
 				stigmergyMap[agentX][agentY] = val;
 				//showStigmergyMap();
-			}
+			//}
 			//end stigmergy write
 
 			//movment begins ----------------------------------------------------------------------------
@@ -440,12 +450,17 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 					//showWorld();
 				}
 			}
+			//printf("%i\n",debug);
+			if (debug){
+				printf("%i\n%i\n", time,score);
+				showWorld();
+			}
 			//movment ends ----------------------------------------------------------------------------
 			//read control
-			for(int cur = 0; cur < stigmergyReadControl.size(); ++cur, ++o) {
-				stigmergyReadControl[cur] = Bit(brain->readOutput(o));
-			}
-			agentR = (bool)stigmergyReadControl[0];
+			//for(int cur = 0; cur < stigmergyReadControl.size(); ++cur, ++o) {
+				//stigmergyReadControl[cur] = Bit(brain->readOutput(o));
+			//}
+			//agentR = (bool)stigmergyReadControl[0];
 			//end read control
 
 		}
