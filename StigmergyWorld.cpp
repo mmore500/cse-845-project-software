@@ -203,6 +203,8 @@ void StigmergyWorld::generateMap(){
 			world[x][y] = 'F';
 			foodNum --;
 			foodCount = Random::getIndex(5) + 5;
+			foodX = x;
+			foodY = y;
 		}
 	}
 
@@ -213,6 +215,8 @@ void StigmergyWorld::generateMap(){
 		if (world[x][y] == 0){
 			agentX = x;
 			agentY = y;
+			homeX = x;
+			homeY = y;
 			agentD = Random::getIndex(4);
 			world[x][y] = 'H';
 			homeNum --;
@@ -235,6 +239,8 @@ void StigmergyWorld::spawnFood(int x, int y){
 			world[x][y] = 'F';
 			foodNum --;
 			foodCount = Random::getIndex(5) + 5;
+			foodX = x;
+			foodY = y;
 		}
 	}
 }
@@ -286,6 +292,17 @@ void StigmergyWorld::showStigmergyMap(){
 	printf("------------------\n");
 }
 
+void StigmergyWorld::resetWorld(){
+	agentX = homeX;
+	agentY = homeY;
+	agentD = Random::getIndex(4);
+	agentF = false;
+	foodCount = Random::getIndex(5) + 5;
+	spawnFood(foodX, foodY);
+	auto allZeros = vector<vector<int>>(xDim, vector<int>(yDim, 0));
+	stigmergyMap = allZeros;
+}
+
 
 void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int visualize, int debug) {
 	auto brain = org->brains[brainNamePL->get(PT)];
@@ -298,6 +315,7 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 		//std::vector<int> stigmergyReadControl(stigmergyReadControlSize);
 
 		brain->resetBrain();
+		resetWorld();
 		double score = 1.0;
 		for (int time = 0; time < StigmergyWorld::lifeTime; time++){
 			//reset brain I/O to avoid agents using deactivated nodes as hidden memory.

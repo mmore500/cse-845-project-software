@@ -21,7 +21,7 @@ using namespace std;
 class StigmergyWorld : public AbstractWorld {
 private:
 	//current location and direction of the agent, begins at home location facing a random direction.
-	int agentX, agentY, agentD;
+	int agentX, agentY, agentD, homeX, homeY, foodX, foodY;
 
 	//stores if the agent has food or not
 	bool agentF;
@@ -123,6 +123,8 @@ private:
 	};
 
 	double wallPercent;
+
+	void resetWorld();
 public:
 	//User Parameters
 	static shared_ptr<ParameterLink<int>> evaluationsPerGenerationPL;
