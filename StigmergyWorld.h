@@ -143,7 +143,7 @@ public:
 	virtual void evaluateSolo(shared_ptr<Organism> org, int analyze, int visualize, int debug);
 
 	virtual void evaluate(map<string, shared_ptr<Group>>& groups, int analyze, int visualize, int debug) {
-		StigmergyWorld::generateMap();
+		//StigmergyWorld::generateMap();
 		int popSize = groups[groupNamePL->get(PT)]->population.size();
 		for (int i = 0; i < popSize; i++) {
 			evaluateSolo(groups[groupNamePL->get(PT)]->population[i], analyze, visualize, debug);

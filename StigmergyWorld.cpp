@@ -215,6 +215,7 @@ void StigmergyWorld::generateMap(){
 		if (world[x][y] == 0){
 			agentX = x;
 			agentY = y;
+			agentF = false;
 			homeX = x;
 			homeY = y;
 			agentD = Random::getIndex(4);
@@ -319,7 +320,8 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 		std::vector<int> stigmergyContentOutput(stigmergyContentSize);
 
 		brain->resetBrain();
-		resetWorld();
+		//resetWorld();
+		generateMap();
 		double score = 0.0;
 		for (int time = 0; time < StigmergyWorld::lifeTime; time++){
 			// set inputs
@@ -408,8 +410,8 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 				val += stigmergyContentOutput[cur] << cur;
 			}
 			//reward fitness for using stigmergy
-			if ((stigmergyMap[agentX][agentY] == 0 and val != 0) or (stigmergyMap[agentX][agentY] != 0 and val == 0)){
-				score += 1/100.0;
+			if (stigmergyMap[agentX][agentY] != val){
+				score += 1/500.0;
 			}
 			stigmergyMap[agentX][agentY] = val;
 			
@@ -420,6 +422,7 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 				movementControl[cur] = Bit(brain->readOutput(o));
 			}
 			auto moveAction = movementControl[0] + 2*movementControl[1];
+			//auto moveAction = Random::getIndex(4);
 			switch (moveAction){
 				case 0:
 				break;
