@@ -310,6 +310,49 @@ void StigmergyWorld::resetWorld(){
 	stigmergyMap = allZeros;
 }
 
+string StigmergyWorld::visualizeOutput(){
+	string returnString = "";
+	for(int j=0;j<yDim;j++){
+		for(int i=0;i<xDim;i++){
+			switch(world[i][j]){
+				case 0:
+				returnString += "0 ";
+				break;
+				case 1:
+				returnString += "1 ";
+				break;
+				case 'H':
+				returnString += "2 ";
+				break;
+				case 'F':
+				returnString += "3 ";
+				break;
+			}
+			switch(stigmergyMap[i][j]){
+				case 0:
+				returnString += "0";
+				break;
+				case 1:
+				returnString += "1";
+				break;
+				case 2:
+				returnString += "2";
+				break;
+				case 3:
+				returnString += "3";
+				break;
+			}
+			if (!(i+1 < xDim)){
+				returnString += ";";
+			} else{
+				returnString += " ";
+			}
+		}
+	}
+	returnString += std::to_string(agentX) + " " + std::to_string(agentY) + " " + std::to_string(agentD);
+	return returnString;
+}
+
 
 void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int visualize, int debug) {
 	auto brain = org->brains[brainNamePL->get(PT)];
@@ -323,6 +366,9 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 		//resetWorld();
 		generateMap();
 		double score = 0.0;
+		if (visualize) { //write grid size to data file
+    		FileManager::writeToFile("StigmergyData.txt", std::to_string(xDim) + " " + std::to_string(yDim));
+  		}
 		for (int time = 0; time < StigmergyWorld::lifeTime; time++){
 			// set inputs
 			int i = 0;
@@ -464,6 +510,9 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 				printf("%i\n%f\n", time,score);
 				showWorld();
 			}
+			if (visualize) {
+    			FileManager::writeToFile("StigmergyData.txt", visualizeOutput());
+  			}
 		}
 		org->dataMap.append("score", score);
 	}

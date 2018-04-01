@@ -20,6 +20,7 @@ using namespace std;
 
 class StigmergyWorld : public AbstractWorld {
 private:
+ 	string visualizeOutput();
 	//current location and direction of the agent, begins at home location facing a random direction.
 	int agentX, agentY, agentD, homeX, homeY, foodX, foodY;
 
