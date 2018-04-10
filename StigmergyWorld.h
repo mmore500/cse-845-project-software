@@ -75,6 +75,18 @@ private:
 	void generateMap();
 	void showWorld();
 	void showStigmergyMap();
+
+	void stigTimeDecay();
+	void stigChemDecay();
+	void stigMoveDecay();
+
+	int enableTimeDecay;
+	double timeDecayRate;
+	int enableChemDecay; 
+	double chemDecayRate;
+	int enableMoveDecay; 
+	double moveDecayRate;
+
 	struct offsets{
 		int x(int dir){
 			int r = 0;
@@ -134,6 +146,12 @@ public:
 	static shared_ptr<ParameterLink<int>> xDimPL;
 	static shared_ptr<ParameterLink<int>> yDimPL;
 	static shared_ptr<ParameterLink<double>> wallPercentPL;
+	static shared_ptr<ParameterLink<int>> enableTimeDecayPL;
+	static shared_ptr<ParameterLink<double>> timeDecayRatePL;
+	static shared_ptr<ParameterLink<int>> enableChemDecayPL; 
+	static shared_ptr<ParameterLink<double>> chemDecayRatePL;
+	static shared_ptr<ParameterLink<int>> enableMoveDecayPL; 
+	static shared_ptr<ParameterLink<double>> moveDecayRatePL;
 	//MABE Parameters
 	static shared_ptr<ParameterLink<string>> groupNamePL;
 	static shared_ptr<ParameterLink<string>> brainNamePL;

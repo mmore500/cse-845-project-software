@@ -16,7 +16,12 @@ shared_ptr<ParameterLink<int>> StigmergyWorld::stigmergyBitsPL = Parameters::reg
 shared_ptr<ParameterLink<int>> StigmergyWorld::xDimPL = Parameters::register_parameter("WORLD_STIGMERGY-xDim", 15, "width of world");
 shared_ptr<ParameterLink<int>> StigmergyWorld::yDimPL = Parameters::register_parameter("WORLD_STIGMERGY-yDim", 15, "height of world");
 shared_ptr<ParameterLink<double>> StigmergyWorld::wallPercentPL = Parameters::register_parameter("WORLD_STIGMERGY-wallPercent", 0.75, "percentage of walls to remove, BETWEEN 0 and 1");
-
+shared_ptr<ParameterLink<int>> StigmergyWorld::enableTimeDecayPL = Parameters::register_parameter("WORLD_STIGMERGY-enableTimeDecay", 0, "Set to 1 to enable this type of decay. 0 (off) is default");
+shared_ptr<ParameterLink<double>> StigmergyWorld::timeDecayRatePL = Parameters::register_parameter("WORLD_STIGMERGY-timeDecayRate", 0.5, "Set the decay probability per update (geometric series) values must be between 1 and 0");
+shared_ptr<ParameterLink<int>> StigmergyWorld::enableChemDecayPL = Parameters::register_parameter("WORLD_STIGMERGY-enableChemDecay", 0, "Set to 1 to enable this type of decay. 0 (off) is default");
+shared_ptr<ParameterLink<double>> StigmergyWorld::chemDecayRatePL = Parameters::register_parameter("WORLD_STIGMERGY-chemDecayRate", 0.5, "Set the decay probability per update (geometric series) values must be between 1 and 0");
+shared_ptr<ParameterLink<int>> StigmergyWorld::enableMoveDecayPL = Parameters::register_parameter("WORLD_STIGMERGY-enableMoveDecay", 0, "Set to 1 to enable this type of decay. 0 (off) is default");
+shared_ptr<ParameterLink<double>> StigmergyWorld::moveDecayRatePL = Parameters::register_parameter("WORLD_STIGMERGY-moveDecayRate", 0.5, "Set the decay probability per update (geometric series) values must be between 1 and 0");
 
 //MABE Parameters
 shared_ptr<ParameterLink<string>> StigmergyWorld::groupNamePL = Parameters::register_parameter("WORLD_STIGMERGY_NAMES-groupNameSpace", (string)"root::", "namespace of group to be evaluated");
@@ -54,6 +59,15 @@ StigmergyWorld::StigmergyWorld(shared_ptr<ParametersTable> _PT):AbstractWorld(_P
 		yDim++;
 	}
 	wallPercent = wallPercentPL->get(PT);
+
+	enableTimeDecay = enableTimeDecayPL->get(PT);
+	enableChemDecay = enableChemDecayPL->get(PT);
+	enableMoveDecay = enableMoveDecayPL->get(PT);
+
+	timeDecayRate = timeDecayRatePL->get(PT);
+	chemDecayRate = chemDecayRatePL->get(PT);
+	moveDecayRate = moveDecayRatePL->get(PT);
+
 
 	visionConeOffsets = defineVisionCone();
 	stigmergyProximitySensorOffsets = defineStigmergySensor();
@@ -353,6 +367,80 @@ string StigmergyWorld::visualizeOutput(){
 	return returnString;
 }
 
+void StigmergyWorld::stigTimeDecay(){
+	for(int j=0;j<yDim;j++){
+		for(int i=0;i<xDim;i++){
+			if (stigmergyMap[i][j] != 0){
+				double roll = Random::getDouble(0,1);
+				if (roll <= timeDecayRate){
+					stigmergyMap[i][j] = 0;
+				}
+			}
+		}
+	}
+}
+
+void StigmergyWorld::stigChemDecay(){
+	for(int j=0;j<yDim;j++){
+		for(int i=0;i<xDim;i++){
+			if (stigmergyMap[i][j] != 0){
+				double roll = Random::getDouble(0,1);
+				if (roll <= chemDecayRate){
+					//change the == 1 to an == 0 if you want this kind of decay to be able
+					//to erase signal.------------------------------------------------------->v
+					stigmergyMap[i][j] = stigmergyMap[i][j] - 1 + (int)(stigmergyMap[i][j] == 1);
+				}
+			}
+		}
+	}
+}
+
+void StigmergyWorld::stigMoveDecay(){
+	for(int j=0;j<yDim;j++){
+		for(int i=0;i<xDim;i++){
+			if (stigmergyMap[i][j] != 0){
+				double roll = Random::getDouble(0,1);
+				if (roll <= moveDecayRate){
+					int randNeighbor = Random::getIndex(8);
+					int x = 0;
+					int y = 0;
+					switch(randNeighbor){
+						case 0:
+						x = -1;
+						y = -1;
+						break;
+						case 1:
+						y = -1;
+						break;
+						case 2:
+						x = 1;
+						y = -1;
+						break;
+						case 3:
+						x = 1;
+						break;
+						case 4:
+						x = 1;
+						y = 1;
+						break;
+						case 5:
+						y = 1;
+						break;
+						case 6:
+						x = -1;
+						y = 1;
+						break;
+						case 7:
+						x = -1;
+						break;
+					}
+					std::swap(stigmergyMap[i][j], stigmergyMap[i+x][j+y]);
+				}
+			}
+		}
+	}
+}
+
 
 void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int visualize, int debug) {
 	auto brain = org->brains[brainNamePL->get(PT)];
@@ -455,11 +543,14 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 			for (int cur = 0; cur < stigmergyContentSize; cur++){
 				val += stigmergyContentOutput[cur] << cur;
 			}
-			//reward fitness for using stigmergy
-			if (stigmergyMap[agentX][agentY] != val){
+			//reward fitness for using stigmergy, no fitness for zero
+			if (val != 0 and stigmergyMap[agentX][agentY] != val){
 				score += 1/500.0;
 			}
-			stigmergyMap[agentX][agentY] = val;
+			// make zero inert instead of an erase move
+			if (val != 0){
+				stigmergyMap[agentX][agentY] = val;
+			}
 			
 			//end stigmergy write
 
@@ -505,6 +596,15 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 						score = score + 10;
 					}
 				}
+			}
+			if (enableTimeDecay){
+				stigTimeDecay();
+			}
+			if(enableChemDecay){
+				stigChemDecay();
+			}
+			if(enableMoveDecay){
+				stigMoveDecay();
 			}
 			if (debug){
 				printf("%i\n%f\n", time,score);
