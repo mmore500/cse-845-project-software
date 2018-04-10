@@ -401,39 +401,41 @@ void StigmergyWorld::stigMoveDecay(){
 			if (stigmergyMap[i][j] != 0){
 				double roll = Random::getDouble(0,1);
 				if (roll <= moveDecayRate){
-					int randNeighbor = Random::getIndex(8);
 					int x = 0;
 					int y = 0;
-					switch(randNeighbor){
-						case 0:
-						x = -1;
-						y = -1;
-						break;
-						case 1:
-						y = -1;
-						break;
-						case 2:
-						x = 1;
-						y = -1;
-						break;
-						case 3:
-						x = 1;
-						break;
-						case 4:
-						x = 1;
-						y = 1;
-						break;
-						case 5:
-						y = 1;
-						break;
-						case 6:
-						x = -1;
-						y = 1;
-						break;
-						case 7:
-						x = -1;
-						break;
-					}
+					do{
+						int randNeighbor = Random::getIndex(8);
+						switch(randNeighbor){
+							case 0:
+								x = -1;
+								y = -1;
+								break;
+							case 1:
+								y = -1;
+								break;
+							case 2:
+								x = 1;
+								y = -1;
+								break;
+							case 3:
+								x = 1;
+								break;
+							case 4:
+								x = 1;
+								y = 1;
+								break;
+							case 5:
+								y = 1;
+								break;
+							case 6:
+								x = -1;
+								y = 1;
+								break;
+							case 7:
+								x = -1;
+								break;
+						}
+					}while(!((i + x) >= 0 && (i + x) < xDim && (j + y) >= 0 && (j + y) < yDim));
 					std::swap(stigmergyMap[i][j], stigmergyMap[i+x][j+y]);
 				}
 			}
