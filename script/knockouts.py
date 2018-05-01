@@ -43,7 +43,7 @@ with open("knockoutResults.csv",'w') as output:
                       koSum += float(line)
                       koCount += 1.0
             koFitness = koSum/koCount
-            if agentID != "" or agentFitness == -1:
+            if agentID != "" and agentFitness != -1:
                 output.write("{},{},{},{},{},{}\n".format(cond,rep,agentFitness,koFitness,koFitness-agentFitness,(koFitness-agentFitness)/agentFitness))
             else:
                 output.write("{},{},{},{},{},{}\n".format(cond,rep,"NA","NA","NA","NA"))
