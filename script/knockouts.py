@@ -27,9 +27,9 @@ with open("knockoutResults.csv",'w') as output:
             with open("{}".format(path_to_LOD_org), 'r') as org:
                 for line in org:
                     qsplit = line.split('"')
-                    if len(qsplit) > 1:
+                    if len(qsplit) > 1 and int(qsplit[2].split(',')[2]) == 20000:
                         agentID = qsplit[2].split(',')[1]
-            agentFitness = 0
+            agentFitness = -1
             with open("{}".format(path_to_LOD_dat), 'r') as dat:
                 for line in dat:
                     if agentID == line.split(',')[2]:
@@ -43,4 +43,7 @@ with open("knockoutResults.csv",'w') as output:
                       koSum += float(line)
                       koCount += 1.0
             koFitness = koSum/koCount
-            output.write("{},{},{},{},{},{}\n".format(cond,rep,agentFitness,koFitness,koFitness-agentFitness,(koFitness-agentFitness)/agentFitness))
+            if agentID != "" or agentFitness == -1:
+                output.write("{},{},{},{},{},{}\n".format(cond,rep,agentFitness,koFitness,koFitness-agentFitness,(koFitness-agentFitness)/agentFitness))
+            else:
+                output.write("{},{},{},{},{},{}\n".format(cond,rep,"NA","NA","NA","NA"))
