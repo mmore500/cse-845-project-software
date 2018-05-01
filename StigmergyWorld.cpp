@@ -611,10 +611,15 @@ void StigmergyWorld::evaluateSolo(shared_ptr<Organism> org, int analyze, int vis
 			if (debug){
 				printf("%i\n%f\n", time,score);
 				showWorld();
+				cout << endl;
 			}
-			if (visualize) {
-    			FileManager::writeToFile("StigmergyData.txt", visualizeOutput());
-  			}
+			//if (visualize) {
+    		//	FileManager::writeToFile("StigmergyData.txt", visualizeOutput());
+  			//}
+			//printf("VIAS");
+			if (visualize and time == StigmergyWorld::lifeTime - 1){
+				FileManager::writeToFile("knockoutFitness.txt", to_string(score));
+			}
 		}
 		org->dataMap.append("score", score);
 	}
