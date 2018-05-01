@@ -9,6 +9,9 @@ condCount = 7
 repCount = 142
 
 with open("knockoutResults.csv",'w') as output:
+    
+    output.write("{},{},{},{},{},{}\n".format('cond','rep','agentFitness','koFitness','koFitness-agentFitness','(koFitness-agentFitness)/agentFitness)')
+
     for cond in range(7):
         cond2list = [1000,500,100,50,10,5,1]
         cond2 = cond2list[cond]
