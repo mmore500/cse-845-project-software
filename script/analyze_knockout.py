@@ -15,14 +15,14 @@ dat['Knockout Relative Fitness'] = dat.apply(
     )
 
 transl = {0:1000,1:500,2:100,3:50,4:10,5:5,6:1}
-dat['Stigmergy Evaporation Delay (Updates)'] = dat.apply(
+dat['Pheromone Evaporation Delay (Updates)'] = dat.apply(
         lambda x: transl[x['cond']],
         axis=1
     )
 
 # plot data
 sns.barplot(
-        x='Stigmergy Evaporation Delay (Updates)',
+        x='Pheromone Evaporation Delay (Updates)',
         y='Knockout Relative Fitness',
         data=dat,
         color='C0'
@@ -31,13 +31,13 @@ plt.savefig('knockout_rel_fit_stig_delay.pdf')
 
 
 # stats
-cat1 = dat[dat['Stigmergy Evaporation Delay (Updates)']==1]
-cat5 = dat[dat['Stigmergy Evaporation Delay (Updates)']==5]
-cat10 = dat[dat['Stigmergy Evaporation Delay (Updates)']==10]
-cat50 = dat[dat['Stigmergy Evaporation Delay (Updates)']==50]
-cat100 = dat[dat['Stigmergy Evaporation Delay (Updates)']==100]
-cat500 = dat[dat['Stigmergy Evaporation Delay (Updates)']==500]
-cat1000 = dat[dat['Stigmergy Evaporation Delay (Updates)']==1000]
+cat1 = dat[dat['Pheromone Evaporation Delay (Updates)']==1]
+cat5 = dat[dat['Pheromone Evaporation Delay (Updates)']==5]
+cat10 = dat[dat['Pheromone Evaporation Delay (Updates)']==10]
+cat50 = dat[dat['Pheromone Evaporation Delay (Updates)']==50]
+cat100 = dat[dat['Pheromone Evaporation Delay (Updates)']==100]
+cat500 = dat[dat['Pheromone Evaporation Delay (Updates)']==500]
+cat1000 = dat[dat['Pheromone Evaporation Delay (Updates)']==1000]
 
 print("cat1 vs cat5")
 print(ttest_ind(

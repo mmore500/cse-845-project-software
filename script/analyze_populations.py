@@ -98,6 +98,7 @@ fil['Obstacle Density'] = fil.apply(lambda x: transl[x['treat']] if x['treat'] i
 
 # MAKE BARPLOTS
 
+plt.clf()
 sns.barplot(
         x='Hidden Node Count',
         y='Population Average Fitness Score',
@@ -106,6 +107,7 @@ sns.barplot(
     )
 plt.savefig('hidden_node_count_average_fitness.pdf')
 
+plt.clf()
 sns.barplot(
         x='Pheromone Evaporation Delay (Updates)',
         y='Population Average Fitness Score',
@@ -114,6 +116,7 @@ sns.barplot(
     )
 plt.savefig('pheromone_evaporation_delay_average_fitness.pdf')
 
+plt.clf()
 sns.barplot(
         x='Obstacle Density',
         y='Population Average Fitness Score',
